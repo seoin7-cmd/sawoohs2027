@@ -1,0 +1,1036 @@
+<!DOCTYPE html>
+<html lang="ko">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>사우고등학교 입학 안내 모바일 앱</title>
+    <script src="https://cdn.tailwindcss.com"></script>
+    <link href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css" rel="stylesheet">
+    <style>
+        @import url('https://fonts.googleapis.com/css2?family=Noto+Sans+KR:wght@300;400;500;600;700;800;900&display=swap');
+        body {
+            font-family: 'Noto Sans KR', sans-serif;
+            background-color: #0f172a;
+        }
+        /* 스크롤바 숨기기 */
+        .no-scrollbar::-webkit-scrollbar {
+            display: none;
+        }
+        .no-scrollbar {
+            -ms-overflow-style: none;
+            scrollbar-width: none;
+        }
+        /* 핸드폰 프레임 그림자 */
+        .phone-shadow {
+            box-shadow: 0 25px 50px -12px rgba(0, 0, 0, 0.5), 0 0 30px rgba(99, 102, 241, 0.2);
+        }
+        mark {
+            background-color: #fef08a;
+            color: #0f172a;
+            border-radius: 2px;
+            padding: 0 2px;
+        }
+    </style>
+</head>
+<body class="min-h-screen flex items-center justify-center p-0 md:p-6 text-slate-800">
+
+    <!-- 핸드폰 프레임 시뮬레이터 Container -->
+    <div class="w-full max-w-[430px] h-[100vh] md:h-[880px] bg-slate-900 md:rounded-[48px] phone-shadow overflow-hidden border-0 md:border-[8px] border-slate-800 flex flex-col relative">
+
+        <!-- 상단 노치 / 상태바 (실시간 시계 적용) -->
+        <div class="bg-indigo-950 text-white px-6 pt-3 pb-2 flex justify-between items-center text-xs shrink-0 select-none">
+            <span id="liveClock" class="font-semibold text-xs tracking-wider">--:--:--</span>
+            <div class="flex items-center space-x-1.5">
+                <i class="fa-solid fa-signal text-[10px]"></i>
+                <i class="fa-solid fa-wifi text-[10px]"></i>
+                <i class="fa-solid fa-battery-full text-xs"></i>
+            </div>
+        </div>
+
+        <!-- 앱 헤더 -->
+        <header class="bg-indigo-900 text-white px-4 py-3 shrink-0 shadow-md flex justify-between items-center z-20">
+            <div class="flex items-center space-x-2.5">
+                <div class="w-8 h-8 bg-gradient-to-tr from-indigo-500 to-purple-500 rounded-xl flex items-center justify-center font-black text-white text-xs shadow">
+                    SA
+                </div>
+                <div>
+                    <h1 class="font-extrabold text-sm leading-tight flex items-center gap-1">
+                        사우고등학교 <span class="text-[10px] bg-indigo-700/80 text-indigo-200 px-1.5 py-0.5 rounded font-normal">입학가이드</span>
+                    </h1>
+                    <p class="text-[10px] text-indigo-300">2026-2027 신입생 & 입학상담 포털</p>
+                </div>
+            </div>
+            <button onclick="resetApp()" class="text-indigo-200 hover:text-white p-1 text-xs flex items-center gap-1 bg-indigo-800/60 px-2 py-1 rounded-lg">
+                <i class="fa-solid fa-rotate-right"></i> 초기화
+            </button>
+        </header>
+
+        <!-- 공통 통합 검색 바 & 빠른 검색 태그 -->
+        <div class="bg-indigo-900/90 backdrop-blur px-4 pb-3 text-white border-b border-indigo-800/50 shrink-0 z-10">
+            <div class="relative">
+                <i class="fa-solid fa-magnifying-glass absolute left-3 top-2.5 text-indigo-400 text-sm"></i>
+                <input type="text" id="searchInput" oninput="handleSearch(this.value)" 
+                       placeholder="2028 대입제도, 160점, 수능최저, 서울대 검색..." 
+                       class="w-full bg-indigo-950/80 text-white placeholder-indigo-400 text-xs rounded-xl pl-9 pr-8 py-2 border border-indigo-700/60 focus:outline-none focus:ring-2 focus:ring-indigo-400">
+                <button id="searchClearBtn" onclick="clearSearch()" class="hidden absolute right-2.5 top-2 text-indigo-400 hover:text-white text-xs p-0.5">
+                    <i class="fa-solid fa-xmark"></i>
+                </button>
+            </div>
+            <!-- 빠른 추천 태그 -->
+            <div class="flex space-x-1.5 mt-2 overflow-x-auto no-scrollbar text-[11px]">
+                <button onclick="quickSearch('2028 대입제도')" class="bg-indigo-800/70 hover:bg-indigo-700 text-indigo-100 px-2.5 py-1 rounded-full shrink-0 border border-indigo-600/40">🎓 2028 대입제도</button>
+                <button onclick="quickSearch('서울대')" class="bg-indigo-800/70 hover:bg-indigo-700 text-indigo-100 px-2.5 py-1 rounded-full shrink-0 border border-indigo-600/40">🏛️ 서울대 개편안</button>
+                <button onclick="quickSearch('160점')" class="bg-indigo-800/70 hover:bg-indigo-700 text-indigo-100 px-2.5 py-1 rounded-full shrink-0 border border-indigo-600/40">📊 160점 커트라인</button>
+                <button onclick="quickSearch('겨울방학')" class="bg-indigo-800/70 hover:bg-indigo-700 text-indigo-100 px-2.5 py-1 rounded-full shrink-0 border border-indigo-600/40">❄️ 겨울방학 공부법</button>
+                <button onclick="quickSearch('드림캠프')" class="bg-indigo-800/70 hover:bg-indigo-700 text-indigo-100 px-2.5 py-1 rounded-full shrink-0 border border-indigo-600/40">🚀 드림캠프</button>
+            </div>
+        </div>
+
+        <!-- 메인 콘텐츠 영역 (스크롤 가능) -->
+        <main id="mainContainer" class="flex-1 overflow-y-auto bg-slate-50 relative p-4 space-y-4 no-scrollbar">
+
+            <!-- [검색 결과 전용 뷰] -->
+            <div id="searchResultsView" class="hidden space-y-3">
+                <div class="flex justify-between items-center text-xs text-slate-500 pb-1 border-b">
+                    <span>검색 결과 (<strong id="searchCount" class="text-indigo-600">0</strong>건)</span>
+                    <button onclick="clearSearch()" class="text-slate-400 hover:text-slate-600">닫기</button>
+                </div>
+                <div id="searchResultsList" class="space-y-2.5">
+                    <!-- 검색 카드 dynamic rendering -->
+                </div>
+            </div>
+
+            <!-- [탭 1: 🏠 홈] -->
+            <div id="tab-home" class="tab-content space-y-4">
+                <!-- 하이라이트 배너 -->
+                <div class="bg-gradient-to-r from-indigo-900 via-indigo-800 to-purple-900 text-white rounded-2xl p-4 shadow-sm relative overflow-hidden">
+                    <div class="relative z-10 space-y-1.5">
+                        <span class="inline-block bg-indigo-500/30 text-indigo-200 text-[10px] font-bold px-2 py-0.5 rounded-full border border-indigo-400/30">2026-2027 신입생 입학안내</span>
+                        <h2 class="text-lg font-black leading-tight">꿈과 도전으로 함께 성장하는<br><span class="text-yellow-300">사우고등학교</span></h2>
+                        <p class="text-[11px] text-indigo-200">2028 대입 완벽 대비 · AI 중점학교 · 폰프리 실천학교</p>
+                    </div>
+                    <i class="fa-solid fa-graduation-cap absolute -right-3 -bottom-3 text-7xl text-white/5 pointer-events-none"></i>
+                </div>
+
+                <!-- 주요 바로가기 그리드 -->
+                <div class="grid grid-cols-2 gap-2.5">
+                    <button onclick="switchTab('qna')" class="p-3 bg-white border border-slate-200/80 rounded-xl text-left hover:border-indigo-400 transition shadow-xs flex items-center space-x-3">
+                        <div class="w-9 h-9 rounded-lg bg-purple-100 text-purple-600 flex items-center justify-center font-bold text-base"><i class="fa-solid fa-comments"></i></div>
+                        <div>
+                            <div class="text-xs font-bold text-slate-800">상담 Q&A 41선</div>
+                            <div class="text-[10px] text-slate-500">2028 대입 & 입학 FAQ</div>
+                        </div>
+                    </button>
+                    <button onclick="switchTab('club')" class="p-3 bg-white border border-slate-200/80 rounded-xl text-left hover:border-indigo-400 transition shadow-xs flex items-center space-x-3">
+                        <div class="w-9 h-9 rounded-lg bg-amber-100 text-amber-600 flex items-center justify-center font-bold text-base"><i class="fa-solid fa-users"></i></div>
+                        <div>
+                            <div class="text-xs font-bold text-slate-800">동아리 53선</div>
+                            <div class="text-[10px] text-slate-500">1·2·3학년 전 동아리</div>
+                        </div>
+                    </button>
+                    <button onclick="switchTab('brochure', 'sec-ai')" class="p-3 bg-white border border-slate-200/80 rounded-xl text-left hover:border-indigo-400 transition shadow-xs flex items-center space-x-3">
+                        <div class="w-9 h-9 rounded-lg bg-blue-100 text-blue-600 flex items-center justify-center font-bold text-base"><i class="fa-solid fa-robot"></i></div>
+                        <div>
+                            <div class="text-xs font-bold text-slate-800">AI 중점학교</div>
+                            <div class="text-[10px] text-slate-500">해커톤 & 피지컬컴퓨팅</div>
+                        </div>
+                    </button>
+                    <button onclick="switchTab('brochure', 'sec-phonefree')" class="p-3 bg-white border border-slate-200/80 rounded-xl text-left hover:border-indigo-400 transition shadow-xs flex items-center space-x-3">
+                        <div class="w-9 h-9 rounded-lg bg-emerald-100 text-emerald-600 flex items-center justify-center font-bold text-base"><i class="fa-solid fa-mobile-screen-button"></i></div>
+                        <div>
+                            <div class="text-xs font-bold text-slate-800">폰프리 실천학교</div>
+                            <div class="text-[10px] text-slate-500">몰입 & RAS 활동</div>
+                        </div>
+                    </button>
+                </div>
+
+                <!-- 고입 전형 일정 안내 -->
+                <div class="bg-white p-3.5 rounded-xl border border-slate-200/80 space-y-2">
+                    <div class="flex justify-between items-center">
+                        <h3 class="text-xs font-bold text-slate-800 flex items-center gap-1.5"><i class="fa-regular fa-calendar-check text-indigo-600"></i> 입학 설명회 및 주요 일정</h3>
+                        <span class="text-[10px] bg-indigo-100 text-indigo-700 font-bold px-1.5 py-0.5 rounded">2027학년도</span>
+                    </div>
+                    <div class="space-y-1.5 text-[11px] text-slate-600">
+                        <div class="flex justify-between p-2 bg-slate-50 rounded-lg">
+                            <span>입학설명회</span>
+                            <span class="font-bold text-slate-800">2026. 11. 25.(수) 18:00 강당</span>
+                        </div>
+                        <div class="flex justify-between p-2 bg-slate-50 rounded-lg">
+                            <span>원서접수기간</span>
+                            <span class="font-bold text-slate-800">2026. 12. 04.(금) ~ 12. 10.(목)</span>
+                        </div>
+                        <div class="flex justify-between p-2 bg-slate-50 rounded-lg">
+                            <span>합격자 발표</span>
+                            <span class="font-bold text-indigo-600">2026. 12. 14.(월) 이내</span>
+                        </div>
+                    </div>
+                </div>
+
+                <!-- 빠른 안내 팁 -->
+                <div class="bg-indigo-50 border border-indigo-100 rounded-xl p-3 text-xs space-y-1">
+                    <div class="font-bold text-indigo-900 flex items-center gap-1"><i class="fa-solid fa-lightbulb text-amber-500"></i> 입학상담 활용 팁</div>
+                    <p class="text-indigo-800 text-[11px] leading-relaxed">41개의 FAQ가 포함되어 있습니다. 상단 검색창에 '2028 대입제도', '서울대', '겨울방학', '160점' 등을 검색하시면 해당 원문으로 바로 이동합니다.</p>
+                </div>
+            </div>
+
+            <!-- [탭 2: 💬 상담 Q&A] -->
+            <div id="tab-qna" class="tab-content hidden space-y-3">
+                <div class="flex justify-between items-center">
+                    <h3 class="text-sm font-bold text-slate-900 flex items-center gap-1.5"><i class="fa-solid fa-circle-question text-indigo-600"></i> 입학/진학 Q&A (총 41개)</h3>
+                    <span class="text-[10px] text-slate-500">카드를 누르면 답변이 열립니다</span>
+                </div>
+
+                <!-- Q&A 카테고리 필터 -->
+                <div class="flex space-x-1.5 overflow-x-auto no-scrollbar text-[11px]">
+                    <button onclick="filterQNA('all')" class="qna-filter-btn bg-indigo-600 text-white px-2.5 py-1 rounded-lg shrink-0 font-medium">전체(41)</button>
+                    <button onclick="filterQNA('2028 대입')" class="qna-filter-btn bg-slate-200 text-slate-700 px-2.5 py-1 rounded-lg shrink-0 font-medium">2028 대입</button>
+                    <button onclick="filterQNA('입학·성적')" class="qna-filter-btn bg-slate-200 text-slate-700 px-2.5 py-1 rounded-lg shrink-0 font-medium">입학·성적</button>
+                    <button onclick="filterQNA('진학·대입')" class="qna-filter-btn bg-slate-200 text-slate-700 px-2.5 py-1 rounded-lg shrink-0 font-medium">진학·대입</button>
+                    <button onclick="filterQNA('학교생활')" class="qna-filter-btn bg-slate-200 text-slate-700 px-2.5 py-1 rounded-lg shrink-0 font-medium">학교생활</button>
+                    <button onclick="filterQNA('국제교류')" class="qna-filter-btn bg-slate-200 text-slate-700 px-2.5 py-1 rounded-lg shrink-0 font-medium">국제교류</button>
+                    <button onclick="filterQNA('AI·교육과정')" class="qna-filter-btn bg-slate-200 text-slate-700 px-2.5 py-1 rounded-lg shrink-0 font-medium">AI·교육과정</button>
+                </div>
+
+                <div id="qnaListContainer" class="space-y-2">
+                    <!-- Q&A dynamic rendering -->
+                </div>
+            </div>
+
+            <!-- [탭 3: 📋 상담 매뉴얼] -->
+            <div id="tab-manual" class="tab-content hidden space-y-3">
+                <h3 class="text-sm font-bold text-slate-900 flex items-center gap-1.5"><i class="fa-solid fa-book-bookmark text-indigo-600"></i> 입학상담 교사 매뉴얼</h3>
+
+                <!-- 30초 핵심 소개 -->
+                <div id="manual-sec-30sec" class="bg-white p-3.5 rounded-xl border border-slate-200/80 space-y-2">
+                    <h4 class="text-xs font-bold text-indigo-900 flex items-center gap-1"><i class="fa-solid fa-stopwatch text-amber-500"></i> 30초 핵심 학교 소개 스크립트</h4>
+                    <div class="bg-indigo-900 text-indigo-50 p-3 rounded-lg text-xs leading-relaxed font-medium">
+                        "사우고등학교는 <strong class="text-yellow-300">2028 개정 교육과정 및 서울대 입시 개편에 완벽히 부합하는 학교</strong>이자 <strong class="text-emerald-300">경기도지정 AI 중점·폰프리 실천학교</strong>입니다. 질문 중심 수업과 수능 최저 충족 역량, '사우 DREAM CAMP'를 통해 높은 교과·학종 합격률과 상위권 대학 진학 성과를 이루고 있습니다."
+                    </div>
+                </div>
+
+                <!-- 핵심 안내 가이드 -->
+                <div class="bg-white p-3.5 rounded-xl border border-slate-200/80 space-y-2">
+                    <h4 class="text-xs font-bold text-slate-800"><i class="fa-solid fa-list-check text-indigo-600"></i> 주요 분야별 상담 포인트</h4>
+                    <div class="space-y-2 text-xs">
+                        <div class="p-2 bg-slate-50 rounded-lg border-l-4 border-indigo-500">
+                            <strong class="text-indigo-900">1. 2028 대입 및 서울대 개편 반영</strong>
+                            <p class="text-[11px] text-slate-600 mt-0.5">정시 교과평가 비중 확대(40%) 및 수시 수능최저 폐지 등 고교 교과활동 및 탐구의 중요성이 강화됨을 강조</p>
+                        </div>
+                        <div class="p-2 bg-slate-50 rounded-lg border-l-4 border-indigo-500">
+                            <strong class="text-indigo-900">2. 성적대별 안내 (150점~190점대)</strong>
+                            <p class="text-[11px] text-slate-600 mt-0.5">중학교 내신 점수만으로 고교 등급을 단정하지 않고, 자기주도학습 준비도와 입학 후 적응 노력이 성적을 좌우한다는 점을 안내</p>
+                        </div>
+                        <div class="p-2 bg-slate-50 rounded-lg border-l-4 border-indigo-500">
+                            <strong class="text-indigo-900">3. 이공계 & 문과 특화 교육과정</strong>
+                            <p class="text-[11px] text-slate-600 mt-0.5">고급화학, 고급물리학 등 소인수강좌 및 공동/온라인 교육과정을 통해 학종 전공적합성을 강화함</p>
+                        </div>
+                    </div>
+                </div>
+
+                <!-- 겨울방학 준비 조언 -->
+                <div class="bg-amber-50 border border-amber-200 p-3.5 rounded-xl space-y-1.5">
+                    <h4 class="text-xs font-bold text-amber-900"><i class="fa-solid fa-quote-left"></i> 예비 고1 겨울방학 추천 멘트</h4>
+                    <div class="text-[11px] text-amber-800 space-y-1 leading-relaxed">
+                        <p>• "혼자 공부하는 자기주도 학습 시간을 매일 확보하고 하루 10분 독서 습관을 만드세요."</p>
+                        <p>• "수학은 답지를 바로 보지 않고 스스로 개념을 탄탄히 다지며 문제를 해결하는 과정이 핵심입니다."</p>
+                    </div>
+                </div>
+            </div>
+
+            <!-- [탭 4: 📘 학교 브로셔] -->
+            <div id="tab-brochure" class="tab-content hidden space-y-3">
+                <h3 class="text-sm font-bold text-slate-900 flex items-center gap-1.5"><i class="fa-solid fa-book-open text-indigo-600"></i> 사우고 홍보 브로셔 요약</h3>
+
+                <!-- 1. AI 중점학교 -->
+                <div id="sec-ai" class="bg-white p-4 rounded-xl border border-slate-200/80 space-y-2">
+                    <div class="flex items-center space-x-2 text-indigo-900 font-bold text-xs">
+                        <span class="bg-indigo-100 text-indigo-700 p-1.5 rounded-lg"><i class="fa-solid fa-brain"></i></span>
+                        <span class="text-sm">1. 경기도교육청 지정 AI 중점학교</span>
+                    </div>
+                    <p class="text-[11px] text-slate-600 leading-relaxed">
+                        AI 기반 미래 역량을 키우는 창의융합교육 시스템 구축 (2026 AI 체험 박람회, 생성형 AI, 머신러닝, 피지컬 컴퓨팅, AI 윤리 특강)
+                    </p>
+                    <div class="bg-slate-50 p-2.5 rounded-lg text-[11px] space-y-1 text-slate-700">
+                        <p>• <strong>단계별 교육과정:</strong> 인공지능 기초, 데이터 과학, AI 융합 수학, 소프트웨어와 생활</p>
+                        <p>• <strong>체험 & 대회:</strong> AI 로봇암, 디지털 헬스케어, AI·SW 해커톤, 문제해결 프로그래밍 챌린지</p>
+                        <p>• <strong>디지털 인프라:</strong> 교과 연계 디지털 활용 수업, 1인 1스마트기기 지원 환경</p>
+                    </div>
+                </div>
+
+                <!-- 2. 폰프리 실천학교 -->
+                <div id="sec-phonefree" class="bg-white p-4 rounded-xl border border-slate-200/80 space-y-2">
+                    <div class="flex items-center space-x-2 text-emerald-900 font-bold text-xs">
+                        <span class="bg-emerald-100 text-emerald-700 p-1.5 rounded-lg"><i class="fa-solid fa-mobile-screen-button"></i></span>
+                        <span class="text-sm">2. 폰프리(Phone-Free) 실천학교</span>
+                    </div>
+                    <p class="text-[11px] text-slate-600 leading-relaxed">
+                        스마트폰 없는 일과 시간을 통해 수업에 몰입하고 동료 간 정서적 소통을 강화하는 건강한 학교 문화
+                    </p>
+                    <div class="grid grid-cols-3 gap-1.5 text-center text-[10px] pt-1">
+                        <div class="bg-emerald-50 p-2 rounded-lg border border-emerald-100">
+                            <strong class="text-emerald-800 block">수업 몰입</strong>
+                            <span class="text-slate-600">학습 집중력 극대화</span>
+                        </div>
+                        <div class="bg-emerald-50 p-2 rounded-lg border border-emerald-100">
+                            <strong class="text-emerald-800 block">예술·체육</strong>
+                            <span class="text-slate-600">런치콘서트·오아시스</span>
+                        </div>
+                        <div class="bg-emerald-50 p-2 rounded-lg border border-emerald-100">
+                            <strong class="text-emerald-800 block">또래 소통</strong>
+                            <span class="text-slate-600">대화 중심 문화 조성</span>
+                        </div>
+                    </div>
+                </div>
+
+                <!-- 3. 사우 DREAM CAMP -->
+                <div id="sec-dreamcamp" class="bg-white p-4 rounded-xl border border-slate-200/80 space-y-2">
+                    <div class="flex items-center space-x-2 text-purple-900 font-bold text-xs">
+                        <span class="bg-purple-100 text-purple-700 p-1.5 rounded-lg"><i class="fa-solid fa-rocket"></i></span>
+                        <span class="text-sm">3. 사우 DREAM CAMP (단계별 성장)</span>
+                    </div>
+                    <div class="space-y-1.5 text-[11px] text-slate-700">
+                        <div class="p-2 bg-purple-50/50 rounded-lg">
+                            <strong>• 1학년:</strong> 북클럽 독서 활동, 진로 연계 앱(App) 기획 개발 및 탐구 프로젝트
+                        </div>
+                        <div class="p-2 bg-purple-50/50 rounded-lg">
+                            <strong>• 2학년:</strong> 진로 이슈 토론, 모의창업 프로젝트, 시제품 전시 및 투자 펀딩
+                        </div>
+                        <div class="p-2 bg-purple-50/50 rounded-lg">
+                            <strong>• 3학년:</strong> 꿈책향연 팀별 독서토론 및 대입 실전 1:1 모의면접
+                        </div>
+                    </div>
+                </div>
+
+                <!-- 4. 국제교류 & 드림하이 멘토링 -->
+                <div id="sec-global" class="bg-white p-4 rounded-xl border border-slate-200/80 space-y-2">
+                    <div class="flex items-center space-x-2 text-amber-900 font-bold text-xs">
+                        <span class="bg-amber-100 text-amber-700 p-1.5 rounded-lg"><i class="fa-solid fa-earth-americas"></i></span>
+                        <span class="text-sm">4. 일본 소자미나미고 국제교류 & 드림하이 멘토링</span>
+                    </div>
+                    <ul class="text-[11px] text-slate-600 space-y-1.5 list-disc list-inside">
+                        <li><strong>일본 소자미나미고 MOU:</strong> 공동 프로젝트 연구, 줌(ZOOM) 탐구 공유 및 현지 방문</li>
+                        <li><strong>드림하이 대학생 멘토링:</strong> 희망자 대상 월~금 18:00~21:00 야간 자율학습 및 대학생 선배 코칭</li>
+                        <li><strong>온라인/소인수 교육과정:</strong> 고급화학, 고급물리학 등 이공계·문과 심화 과목 개설</li>
+                    </ul>
+                </div>
+            </div>
+
+            <!-- [탭 5: 🎯 동아리 53선] -->
+            <div id="tab-club" class="tab-content hidden space-y-3">
+                <div class="flex justify-between items-center">
+                    <h3 class="text-sm font-bold text-slate-900 flex items-center gap-1.5"><i class="fa-solid fa-users text-indigo-600"></i> 사우고 전체 동아리 (53개)</h3>
+                    <span class="text-[10px] text-slate-500">학생주도형 운영</span>
+                </div>
+
+                <!-- 동아리 필터 -->
+                <div class="flex space-x-1.5 overflow-x-auto no-scrollbar text-[11px]">
+                    <button onclick="filterClubs('all')" class="club-filter-btn bg-indigo-600 text-white px-2.5 py-1 rounded-lg shrink-0 font-medium">전체(53)</button>
+                    <button onclick="filterClubs('ai')" class="club-filter-btn bg-slate-200 text-slate-700 px-2.5 py-1 rounded-lg shrink-0 font-medium">AI/과학/의료</button>
+                    <button onclick="filterClubs('human')" class="club-filter-btn bg-slate-200 text-slate-700 px-2.5 py-1 rounded-lg shrink-0 font-medium">인문/사회/경영</button>
+                    <button onclick="filterClubs('art')" class="club-filter-btn bg-slate-200 text-slate-700 px-2.5 py-1 rounded-lg shrink-0 font-medium">예체능/언어/봉사</button>
+                    <button onclick="filterClubs('grade3')" class="club-filter-btn bg-slate-200 text-slate-700 px-2.5 py-1 rounded-lg shrink-0 font-medium">3학년 전용</button>
+                </div>
+
+                <div id="clubListContainer" class="grid grid-cols-1 gap-2 text-xs">
+                    <!-- Dynamic rendering by JS -->
+                </div>
+            </div>
+
+        </main>
+
+        <!-- 하단 네비게이션 탭 바 -->
+        <nav class="bg-white border-t border-slate-200 px-2 py-1.5 flex justify-around items-center shrink-0 z-20 text-[10px] font-medium text-slate-500">
+            <button onclick="switchTab('home')" id="nav-home" class="nav-btn flex flex-col items-center p-1 text-indigo-600">
+                <i class="fa-solid fa-house text-base mb-0.5"></i>
+                <span>홈</span>
+            </button>
+            <button onclick="switchTab('qna')" id="nav-qna" class="nav-btn flex flex-col items-center p-1 hover:text-indigo-600">
+                <i class="fa-solid fa-comments text-base mb-0.5"></i>
+                <span>상담Q&A</span>
+            </button>
+            <button onclick="switchTab('manual')" id="nav-manual" class="nav-btn flex flex-col items-center p-1 hover:text-indigo-600">
+                <i class="fa-solid fa-clipboard-list text-base mb-0.5"></i>
+                <span>매뉴얼</span>
+            </button>
+            <button onclick="switchTab('brochure')" id="nav-brochure" class="nav-btn flex flex-col items-center p-1 hover:text-indigo-600">
+                <i class="fa-solid fa-book-open text-base mb-0.5"></i>
+                <span>브로셔</span>
+            </button>
+            <button onclick="switchTab('club')" id="nav-club" class="nav-btn flex flex-col items-center p-1 hover:text-indigo-600">
+                <i class="fa-solid fa-users text-base mb-0.5"></i>
+                <span>동아리</span>
+            </button>
+        </nav>
+
+    </div>
+
+    <!-- 스크립트: 데이터베이스 및 시스템 로직 -->
+    <script>
+        // --- 0. 실시간 시계 업데이트 기능 ---
+        function updateClock() {
+            const now = new Date();
+            const hours = String(now.getHours()).padStart(2, '0');
+            const minutes = String(now.getMinutes()).padStart(2, '0');
+            const seconds = String(now.getSeconds()).padStart(2, '0');
+            
+            const clockEl = document.getElementById("liveClock");
+            if (clockEl) {
+                clockEl.innerText = `${hours}:${minutes}`;
+            }
+        }
+        setInterval(updateClock, 1000); // 1초마다 시계 업데이트
+
+        // --- 1. Q&A 데이터 (2028 대입 및 교육과정 포함 총 41개) ---
+        const qnaData = [
+            // 2028 대입 및 교육과정 파트 (Q1 ~ Q10)
+            {
+                id: 1,
+                q: "2028학년도 대학 입시 전형의 기본 체계와 전형별 주요 특징은 무엇인가요?",
+                a: "대입전형은 크게 5가지 유형으로 구분됩니다.\n\n1. 학생부교과전형: 교과 성적이 50% 이상 반영되며, 수능 최저학력기준이나 면접, 학생부 기록 등이 함께 활용될 수 있습니다.\n2. 학생부종합전형: 교과 성적과 비교과 활동을 종합 평가하며, 고교생활 충실도와 학업·진로·공동체 역량을 서류 및 면접으로 평가합니다.\n3. 논술위주전형: 통합적 문제 해결력을 평가하며, 인문계열(언어/통계/수리)과 자연계열(수리/과학) 논술로 진행됩니다.\n4. 실기/실적위주전형: 예체능 및 특기자 중심으로 진행됩니다.\n5. 수능위주전형: 수능 성적(백분위/표준점수)을 주로 활용하며, 일부 대학은 학생부 교과 성적을 정량/정성적으로 반영합니다.",
+                category: "2028 대입",
+                tags: ["2028 대입제도", "2028대입제도", "2028대입", "대입제도", "표준대입전형", "학생부교과", "학생부종합", "논술전형", "수능위주"]
+            },
+            {
+                id: 2,
+                q: "2028학년도 서울대학교 입학전형의 주요 개편 방향은 무엇인가요?",
+                a: "2022 개정 교육과정에 맞추어 단순 암기나 정답 찾기보다 고교 교육과정 내의 학습 경험과 역량을 다각도로 평가하는 '학교교육 중심 평가'가 강화됩니다.\n\n• 핵심 평가 역량 3가지:\n 1) 종합적 사고 역량\n 2) 창의 탐구 역량\n 3) 공동체 역량",
+                category: "2028 대입",
+                tags: ["2028 대입제도", "서울대개편", "학교교육중심", "2022개정교육과정", "평가역량"]
+            },
+            {
+                id: 3,
+                q: "서울대 2028학년도 수시모집 및 정시모집의 변화는 무엇인가요?",
+                a: "• 수시모집:\n - 모두 학생부종합전형으로 운영되며 (1단계: 서류 100%, 2단계: 서류 + 면접), 지역균형전형의 수능 최저학력기준이 폐지되고 지원 자격이 일반고로 제한되며 고교별 추천 인원이 2명에서 3명으로 확대됩니다.\n - 정답 유무보다 사고 과정을 평가하는 ‘SNU 역량평가 면접’이 도입됩니다. (분석적 주제 토론, 심층적 문제 해결, 융합적 과제 수행 방식)\n\n• 정시모집:\n - 정시 일반전형 2단계에서 교과역량평가 배점이 확대(20점 ➔ 40점)되어 고교 내신 및 학생부 기록의 실질 영향력이 대폭 강화됩니다.\n - 일반전형 1단계 선발 인원도 2배수에서 3배수로 확대됩니다.",
+                category: "2028 대입",
+                tags: ["2028 대입제도", "서울대수시", "서울대정시", "SNU역량평가면접", "교과역량평가", "수능최저폐지"]
+            },
+            {
+                id: 4,
+                q: "2028 서울대 입시 개편으로 인한 영향과 전망은 어떻게 예측되나요?",
+                a: "수능 최저 폐지 및 정시 교과평가 비중 확대(40%)로 인해 수능의 영향력은 감소하고 고교 교육 및 학생부 기록(교과활동)의 중요성이 더욱 커집니다. 일반고 학생들에게는 지균 추천 인원 확대 및 수능 허들 완화로 기회가 확대되는 측면이 있습니다.",
+                category: "2028 대입",
+                tags: ["2028 대입제도", "입시전망", "교과활동중요성", "일반고기회확대", "수능영향력감소"]
+            },
+            {
+                id: 5,
+                q: "고교학점제 시행으로 고등학교 교육과정과 평가 방식에는 어떤 변화가 생기나요?",
+                a: "고교학점제 성취평가제 적용 및 2022 개정 교육과정에 따라 과목 선택의 자율성이 커지며, 단순 지식 전달 위주에서 학생 참여형 수업과 과정 중심 평가(수행평가, 서·논술형 평가 등)로 변화합니다. 대학 진학 시에도 모집단위별 학업 준비도 및 전공 연계 권장 과목 이수 여부가 중요한 요소로 작용합니다.",
+                category: "2028 대입",
+                tags: ["고교학점제", "성취평가제", "과정중심평가", "과목선택자율성", "2022개정교육과정"]
+            },
+            {
+                id: 6,
+                q: "학생부 교과 성적 기재 및 대입 반영 방식은 어떻게 변경되나요?",
+                a: "성적 산출 방식 변경과 함께 학교생활기록부의 교과학습발달상황 기록(세부능력 및 특기사항 등)이 정성평가 요소로서 매우 중요해집니다. 특히 학생이 어떤 과목을 선택하여 이수했는지, 해당 과목 수업에서 어떠한 탐구와 성장을 이루었는지가 대입(학종 및 정시 교과평가) 성패를 가르게 됩니다.",
+                category: "2028 대입",
+                tags: ["학생부기재", "세부능력 및 특기사항", "세특", "정성평가", "교과이수"]
+            },
+            {
+                id: 7,
+                q: "고교학점제 시대에 서울대 등 상위권 대학 입시를 꿰뚫는 핵심 교육과정 이수 전략은 무엇인가요?",
+                a: "대학 모집단위(전공)별 '전공 연계 권장 과목'을 충실히 이수해야 합니다. 서울대의 경우 복잡했던 과목 기준을 단과대학 단위로 단순화하여 제시하며, 학교 교육과정 내에서 진로와 연계된 과목을 주도적으로 선택해 깊이 있게 학습하는 과정이 평가에 결정적인 영향을 미칩니다.",
+                category: "2028 대입",
+                tags: ["전공연계권장과목", "권장과목", "이수전략", "상위권대입", "교육과정이수"]
+            },
+            {
+                id: 8,
+                q: "사우고등학교의 수업 및 학례 교육과정 프로그램의 특징은 무엇인가요?",
+                a: "‘깊이 있는 수업’ 및 '융합형 인재 육성'을 목표로 다채로운 질문·탐구 중심 프로그램을 운영합니다.\n\n• 국어: 삶과 연결된 독서, 질문 중심 수행활동(질문으로 서평 쓰기, 구술평가, 소설 창작), 사회적 문제 해결 참여 글쓰기 등\n• 영어: 심화영어비평 프로젝트 발표, 심화영어 에세이 작성, 진로 연계 심화 프로젝트\n• 수학/과학/AI: 수학 지식 나눔 특강, 물리학 심화 실험 캠프, 화학 실험 특강, 탄소 중립 실천 프로젝트, AI 우수 인재 육성 프로젝트 및 AI 중점 학교 운영",
+                category: "AI·교육과정",
+                tags: ["깊이있는수업", "질문중심수업", "융합형인재", "심화프로젝트", "탐구프로그램"]
+            },
+            {
+                id: 9,
+                q: "학생들이 참여할 수 있는 창의적 체험활동이나 동아리 활동은 어떻게 조성되어 있나요?",
+                a: "• 학생 자치 및 문화: 런치콘서트, 가을 음악회, 1인 2악기(기타) 수업, 미술 창작/전시 활동, 학교스포츠클럽(배드민턴 등), 학생자치회 주도 행사(친친데이, 텀블러 데이, 사이버 폭력 예방 캠페인 등)\n• 동아리: 과학, 인문사회, 예술/미디어, AI융합, 경영/경제, 의학/보건 등 50여 개의 다양하고 전문화된 동아리가 활성화되어 있어 학생들의 진로 설계를 지원합니다.",
+                category: "학교생활",
+                tags: ["창의적체험활동", "런치콘서트", "1인2악기", "학생자치회", "동아리활동"]
+            },
+            {
+                id: 10,
+                q: "학생들의 진학 및 적응을 돕기 위한 사우고만의 케어 프로그램은 무엇이 있나요?",
+                a: "드림캠프, 드림하이, 대학생 멘토링, 국제교류 프로그램, 올바른 휴대폰 사용 습관을 위한 폰프리 프로그램, 졸업생 초청 학습법 강연 및 진로진학 비법 공유 프로그램 등을 운영하고 있습니다.",
+                category: "학교생활",
+                tags: ["드림캠프", "드림하이", "대학생멘토링", "폰프리", "졸업생강연", "진로진학비법"]
+            },
+
+            // 기존 일반 FAQ (Q11 ~ Q41)
+            {
+                id: 11,
+                q: "사우고에 오면 어떤 점이 좋은가요?",
+                a: "사우고에서는 교과 수업을 바탕으로 학생이 관심 있는 분야를 탐색하고 자신의 생각을 표현할 기회를 찾을 수 있습니다. 2026년에는 꿈 탐구 프로젝트, AI·SW 교육주간, 글쓰기 융합캠프 등 다양한 교육활동을 진행했습니다. 일본 학교와의 국제교류처럼 교실 밖으로 배움을 넓히는 경험도 있습니다.",
+                category: "학교생활",
+                tags: ["사우고장점", "꿈탐구", "교육활동", "국제교류", "성장"]
+            },
+            {
+                id: 12,
+                q: "중학교 성적이 150점 정도인데 지원하거나 배정받을 수 있나요?",
+                a: "일반고 지원과 배정 가능 여부는 해당 학년도와 지역의 전형요항, 지원 자격, 배정 방식 등에 따라 판단해야 하므로 이 자리에서 점수만으로 합격이나 배정을 말씀드리기는 어렵습니다. 입학 후에는 현재 성적과 관계없이 기초를 다지고 자신에게 맞는 학습 계획을 세우는 것이 중요합니다.",
+                category: "입학·성적",
+                tags: ["150점", "배정", "합격점수", "전형요항", "학습계획"]
+            },
+            {
+                id: 13,
+                q: "중학교 성적이 190~195점이면 입학 후 몇 등급을 받을 수 있나요?",
+                a: "중학교 성적과 고등학교의 평가 과목·방법, 함께 배우는 학생들의 구성은 다르기 때문에 190~195점이라는 점수만으로 입학 후 몇 등급을 받을지 예측할 수는 없습니다. 입학 후에는 수업에 충실하면서 과목별 평가 기준을 확인하고 보완하는 것이 중요합니다.",
+                category: "입학·성적",
+                tags: ["190점", "195점", "내신등급", "평가기준", "통학"]
+            },
+            {
+                id: 14,
+                q: "내신 경쟁이 걱정되는데 어떻게 준비해야 하나요?",
+                a: "특정 학교에서 등급을 받기 쉽거나 어렵다고 단정하기보다는, 입학 후 수업 내용을 꾸준히 이해하고 평가 기준을 확인하며 준비하는 것이 중요합니다. 사우고에서는 학생들이 학습 방법과 평가 결과를 돌아볼 수 있도록 학습법 특강도 운영했습니다.",
+                category: "입학·성적",
+                tags: ["내신경쟁", "학습법특강", "공부습관", "평가기준"]
+            },
+            {
+                id: 15,
+                q: "교대·약대나 인서울 대학에 가려면 몇 등급이어야 하나요?",
+                a: "대학과 모집단위, 전형 방식 및 지원 연도에 따라 평가 요소와 결과가 달라 몇 등급이면 반드시 합격한다고 말씀드릴 수는 없습니다. 해당 연도의 모집요강과 전년도 입시 결과를 함께 확인하며 준비해야 합니다.",
+                category: "진학·대입",
+                tags: ["교대", "약대", "인서울", "입시결과", "모집요강"]
+            },
+            {
+                id: 16,
+                q: "다른 학교와 비교하면 사우고만의 강점은 무엇인가요?",
+                a: "사우고의 강점으로는 수업을 바탕으로 한 탐구 경험과 학생이 직접 참여하는 국제교류, AI 중점 프로그램 등을 말씀드리고 싶습니다. 조사와 발표 경험을 쌓으며 체계적인 생기부를 만들어갑니다.",
+                category: "학교생활",
+                tags: ["사우고강점", "탐구경험", "국제교류", "발표경험"]
+            },
+            {
+                id: 17,
+                q: "수업 분위기와 생활지도는 어떤가요?",
+                a: "교과 수업뿐 아니라 담임 선생님과의 소통을 통해 학생이 학교생활에 잘 적응하도록 돕고 있습니다. 폰프리 실천학교로서 수업 몰입 환경이 매우 뛰어나게 조성되어 있습니다.",
+                category: "학교생활",
+                tags: ["수업분위기", "생활지도", "담임소통", "학교적응"]
+            },
+            {
+                id: 18,
+                q: "아직 희망 진로가 정해지지 않았는데 괜찮을까요?",
+                a: "네, 여러 교과와 활동을 경험하면서 자신이 흥미를 느끼는 분야를 찾아가도 좋습니다. 2026년 꿈 탐구 프로젝트와 다양한 분야의 탐구 활동이 잘 마련되어 있습니다.",
+                category: "진학·대입",
+                tags: ["진로미정", "꿈탐구프로젝트", "흥미탐색", "적성"]
+            },
+            {
+                id: 19,
+                q: "진로에 맞는 선택 과목은 어떻게 고르나요?",
+                a: "선택 과목은 학생의 관심과 진로, 기초 학습 정도를 함께 살펴 고르는 것이 좋습니다. 희망 학과에서 요구하는 권장과목을 기반으로 안내되는 상담을 통해 이수할 수 있습니다.",
+                category: "AI·교육과정",
+                tags: ["선택과목", "진로맞춤", "교육과정", "학과요구"]
+            },
+            {
+                id: 20,
+                q: "관심 분야를 더 깊이 배우거나 탐구할 기회가 있나요?",
+                a: "생명과학 심화실험 특강, 글쓰기 융합캠프, 깊이봄 심화 탐구 등 교과 수업에서 생긴 궁금증을 넓혀보는 여러 시그니처 교육활동이 진행됩니다.",
+                category: "AI·교육과정",
+                tags: ["심화실험", "글쓰기캠프", "깊이봄", "심화탐구"]
+            },
+            {
+                id: 21,
+                q: "과학·공학·경영·영어영문 분야 동아리 활동도 할 수 있나요?",
+                a: "사우고에는 50여 개의 학생주도 동아리가 운영되고 있어, 과학·공학, 경영, 언어 등 다양한 카테고리에서 깊이 있는 진로 탐색이 가능합니다.",
+                category: "학교생활",
+                tags: ["과학공학동아리", "경영동아리", "영어영문동아리", "진로탐색"]
+            },
+            {
+                id: 22,
+                q: "방과 후 자습이나 학습 도움을 받을 수 있나요?",
+                a: "자습(드림하이)은 희망자를 대상으로 아침과 저녁 시간대에 대학생 선배 멘토링과 함께 운영되어 학습 코칭을 받을 수 있습니다.",
+                category: "학교생활",
+                tags: ["방과후자습", "학습법특강", "드림하이", "오답분석"]
+            },
+            {
+                id: 23,
+                q: "일본 국제교류에서는 구체적으로 무엇을 하나요?",
+                a: "오카야마현립 소자 미나미고등학교와 MOU를 체결하여 현지 연구 발표, 질의응답, ZOOM 온라인 교류 및 문집 제작 등을 진행합니다.",
+                category: "국제교류",
+                tags: ["일본국제교류", "소자미나미고", "연구발표", "온라인교류", "문집제작"]
+            },
+            {
+                id: 24,
+                q: "국제교류는 누구나 참여하나요?",
+                a: "서류, 영어 시험, 면접을 거쳐 참가 학생을 선발합니다. 영어 소통력과 세계시민 역량을 크게 확장할 수 있는 기회입니다.",
+                category: "국제교류",
+                tags: ["선발절차", "영어영문", "발표소통", "면접"]
+            },
+            {
+                id: 25,
+                q: "국제교류 비용과 내년 계획은 어떻게 되나요?",
+                a: "2027년 일본 방문은 7월경 계획되어 있으며 확정 사항은 학교 안내를 통해 제공됩니다.",
+                category: "국제교류",
+                tags: ["국제교류비용", "2027년계획", "일본방문", "참여조건"]
+            },
+            {
+                id: 26,
+                q: "내신이 160점인데 가능할까요? 커트라인이 궁금합니다.",
+                a: "지원하는 학생 동향에 따라 커트라인이 달라지므로 중학교 담임 선생님과 상담 후 지원하시면 충분히 가능성이 있습니다.",
+                category: "입학·성적",
+                tags: ["160점", "커트라인", "지원가능여부", "담임상담"]
+            },
+            {
+                id: 27,
+                q: "출신 중학교 간 성적 차이는 어떤가요?",
+                a: "중학교 내신 점수보다는 고교 입학 후 자기주도학습 역량과 준비도가 성적 향상을 좌우합니다.",
+                category: "입학·성적",
+                tags: ["중학교성적", "자기주도학습", "성적향상", "수능성적"]
+            },
+            {
+                id: 28,
+                q: "진로가 이공계열인데 사우고 와도 괜찮을까요?",
+                a: "고급화학, 고급물리학 등 소인수 강좌와 온라인 교육과정이 매우 잘 구축되어 있어 이공계열 진학에 확실히 유리합니다.",
+                category: "진학·대입",
+                tags: ["이공계열", "고급화학", "고급물리", "소인수강좌", "온라인교육과정"]
+            },
+            {
+                id: 29,
+                q: "문과 계열 아이들에게도 특화된 프로그램들이 있나요?",
+                a: "인문사회 프로그램 및 로스쿨 등 심화 진로 탐구를 위한 소인수 강좌/온라인 교육과정이 연계됩니다.",
+                category: "진학·대입",
+                tags: ["문과계열", "인문사회", "로스쿨", "소인수강좌", "온라인교육과정"]
+            },
+            {
+                id: 30,
+                q: "입학 전 겨울방학을 어떻게 보내야 할까요?",
+                a: "국영수 자기주도 학습 습관을 다지고 하루 10분 독서 습관을 만드세요. 특히 수학은 스스로 개념을 세우고 문제 푸는 연습이 핵심입니다.",
+                category: "입학·성적",
+                tags: ["겨울방학", "독서활동", "수학공부법", "자기주도학습"]
+            },
+            {
+                id: 31,
+                q: "자기주도학습만으로 고등학교 공부를 따라갈 수 있을까요?",
+                a: "스스로 복습하는 시간이 필수적입니다. 미흡한 과목만 선택적으로 보완하며 자기 공부 시간을 확보하는 것이 핵심입니다.",
+                category: "입학·성적",
+                tags: ["자기주도학습", "학원수강", "복습시간", "공부방법"]
+            },
+            {
+                id: 32,
+                q: "희망하는 학과 진학을 위해 어떤 과목을 수강해야 하나요?",
+                a: "대학별 학과 '권장과목'을 확인하고 이를 선택 이수하면 대입 학종 및 대학 공부에 유리합니다.",
+                category: "AI·교육과정",
+                tags: ["권장과목", "핵심권장과목", "선택과목", "학과맞춤"]
+            },
+            {
+                id: 33,
+                q: "사우고에서는 수시보다 정시로 진학을 많이 하나요?",
+                a: "수시와 정시 모두 우수한 성과를 냅니다. 특히 수능 최저학력기준 충족률이 높아 교과/종합전형 합격률이 높습니다.",
+                category: "진학·대입",
+                tags: ["수시", "정시", "5등급제", "수능최저", "교과전형"]
+            },
+            {
+                id: 34,
+                q: "수시에 '수능 최저 학력 기준'을 통과해야 한다는 말이 무슨 뜻인가요?",
+                a: "대학이 요구하는 수능 최소 등급 기준입니다. 이를 충족하면 실질 경쟁률이 낮아져 합격 확률이 대폭 상승합니다.",
+                category: "진학·대입",
+                tags: ["수능최저", "최저학력기준", "수시합격", "학생부종합"]
+            },
+            {
+                id: 35,
+                q: "진로를 꼭 빨리 정해야 진학 준비가 수월한가요?",
+                a: "1학년 때는 큰 계열(인문/자연)부터 시작해 점차 구체화해도 충분합니다. 자율전공선택제 등 다양한 방식도 있습니다.",
+                category: "진학·대입",
+                tags: ["진로결정", "계열선택", "자율전공", "진로탐색"]
+            },
+            {
+                id: 36,
+                q: "야자(드림하이)는 꼭 해야 하나요?",
+                a: "희망자 대상 자율 운영이며, 대학생 선배들의 1:1 멘토링과 코칭을 함께 지원받을 수 있습니다.",
+                category: "학교생활",
+                tags: ["야자", "드림하이", "자율학습", "대학생멘토링"]
+            },
+            {
+                id: 37,
+                q: "드림캠프 프로그램은 어떻게 진행되나요?",
+                a: "1학년 앱 개발, 2학년 모의창업, 3학년 꿈책향연 및 1:1 대입 모의면접으로 단계별로 추진됩니다.",
+                category: "AI·교육과정",
+                tags: ["드림캠프", "앱개발", "모의창업", "모의면접"]
+            },
+            {
+                id: 38,
+                q: "사우고 합격하면 예비소집일은 언제인가요?",
+                a: "합격자 발표 후 중학교를 통해 예비소집 일정 및 준비사항이 상세히 공지됩니다.",
+                category: "입학·성적",
+                tags: ["예비소집일", "합격자안내", "신입생안내"]
+            },
+            {
+                id: 39,
+                q: "동아리는 어떻게 구성되어 있나요?",
+                a: "인문, 과학, AI, 예술 등 53개 동아리가 운영되며 학생 주도형 기획으로 운영됩니다.",
+                category: "학교생활",
+                tags: ["동아리구성", "학생주도", "동아리부장", "동아리활동"]
+            },
+            {
+                id: 40,
+                q: "국제교류 프로그램은 뭔가요?",
+                a: "일본 소자미나미 고교와 공동 탐구 프로젝트, ZOOM 교류 및 현지 방문을 진행하는 프로그램입니다.",
+                category: "국제교류",
+                tags: ["국제교류", "소자미나미", "온라인교류", "현지방문"]
+            },
+            {
+                id: 41,
+                q: "AI 중점학교라는 건 뭔가요?",
+                a: "경기도교육청 지정 AI 중점학교로서 AI 체험 박람회, 피지컬 컴퓨팅, 머신러닝, AI 윤리 특강 등을 전면 운영합니다.",
+                category: "AI·교육과정",
+                tags: ["AI중점학교", "AI박람회", "피지컬컴퓨팅", "AI윤리"]
+            }
+        ];
+
+        // --- 2. 동아리 전체 데이터 (53개 - PDF 기준) ---
+        const clubData = [
+            { id: "c1", name: "퓨처 메이커스", target: "1,2학년", cat: "ai", group: "AI융합", goal: "바이브코딩을 활용한 로봇 및 드론 제어 융합 프로젝트", place: "우리들플랫폼", count: 43 },
+            { id: "c2", name: "인앤콕", target: "1,2학년", cat: "art", group: "체육", goal: "배드민턴 활동을 통한 체력 향상 및 협업 역량 함양", place: "체육관", count: 34 },
+            { id: "c3", name: "미드영어", target: "1,2학년", cat: "art", group: "언어", goal: "영어 미디어 감상을 통한 영어 소통 능력 및 창의 사고", place: "1학년 3반", count: 29 },
+            { id: "c4", name: "메디메디피아", target: "1,2학년", cat: "ai", group: "의료", goal: "의료 관련 실습 활동 및 의학적 지식 탐구", place: "2학년 5반", count: 26 },
+            { id: "c5", name: "또바기", target: "1,2학년", cat: "human", group: "인문사회", goal: "진로 융합 기반 사회 문제 심층 탐구 프로젝트", place: "1학년 11반", count: 25 },
+            { id: "c6", name: "팔레트", target: "1,2학년", cat: "human", group: "통합", goal: "시각적 표현 및 개별 포트폴리오 제작 창의성 함양", place: "교과교실 3", count: 24 },
+            { id: "c7", name: "새빛도서반", target: "1,2학년", cat: "art", group: "독서인문", goal: "독서 시간 확대 및 인문학적 감수성과 상상력 함양", place: "도서관", count: 23 },
+            { id: "c8", name: "바쎄", target: "1,2학년", cat: "ai", group: "과학", goal: "화학·생명과학 실험과 탐구를 통한 과학적 사고력 신장", place: "멘델실", count: 22 },
+            { id: "c9", name: "스토리움", target: "1,2학년", cat: "human", group: "융합", goal: "다양한 주제의 관점 탐구 및 자신만의 언어 표현", place: "1학년 10반", count: 22 },
+            { id: "c10", name: "플루토", target: "1,2학년", cat: "human", group: "통합", goal: "문이과 지식 융합을 통한 통합적 관점 신장", place: "1학년 4반", count: 22 },
+            { id: "c11", name: "피케", target: "1,2학년", cat: "ai", group: "과학", goal: "과학 실험을 통한 핵심 원리 탐구 및 학습", place: "아인슈타인실", count: 22 },
+            { id: "c12", name: "글로벌 진로탐구반", target: "1,2학년", cat: "human", group: "통합", goal: "세계시민적 관점의 국가·직업 탐구 및 진로 설계", place: "교과교실 1", count: 22 },
+            { id: "c13", name: "과학의 품격", target: "1,2학년", cat: "ai", group: "과학", goal: "진로 연계 과학 실험을 통한 문제 해결력 함양", place: "케플러실", count: 21 },
+            { id: "c14", name: "그리다", target: "1,2학년", cat: "art", group: "미술", goal: "조형 예술 융합 활동을 통한 시각적 소통 능력 신장", place: "교과교실 2", count: 21 },
+            { id: "c15", name: "뉴런", target: "1,2학년", cat: "ai", group: "과학", goal: "실생활 궁금증 연계 과학 실험 설계 및 수행", place: "2학년 2반", count: 21 },
+            { id: "c16", name: "혜윰늘", target: "1,2학년", cat: "human", group: "인문사회", goal: "다양한 주제 탐구를 통한 의사소통 및 문제해결력 함양", place: "2학년 9반", count: 21 },
+            { id: "c17", name: "과학탐구", target: "1,2학년", cat: "ai", group: "과학", goal: "과학적 탐구 활동과 융합 사고력 신장", place: "1학년 7반", count: 20 },
+            { id: "c18", name: "러너스", target: "1,2학년", cat: "art", group: "체육", goal: "다양한 스포츠 종목 경험 및 체력 증진", place: "1학년 8반", count: 20 },
+            { id: "c19", name: "스크립트", target: "1,2학년", cat: "art", group: "예술(미디어)", goal: "영상 기획·촬영·편집 미디어 제작 및 사회적 메시지 전달", place: "2학년 7반", count: 20 },
+            { id: "c20", name: "스티칭", target: "1,2학년", cat: "human", group: "교육", goal: "교육 관련 실습 및 올바른 교육관 정립", place: "1학년 2반", count: 20 },
+            { id: "c21", name: "시비타스", target: "1,2학년", cat: "human", group: "인문사회", goal: "법·행정 분야 사회 문제 탐구 및 토론 사례 분석", place: "2학년 3반", count: 20 },
+            { id: "c22", name: "아리솔", target: "1,2학년", cat: "human", group: "인문사회", goal: "가상 정당 및 지역 사회 정책 해결 모색", place: "1학년 1반", count: 20 },
+            { id: "c23", name: "요리조리", target: "1,2학년", cat: "ai", group: "식품영양/과학", goal: "요리 활동과 실험을 통한 창의적 문제 해결", place: "상상공작실", count: 20 },
+            { id: "c24", name: "인어스", target: "1,2학년", cat: "human", group: "인문사회(심리)", goal: "또래상담자 교육 및 또래 지지 체계 구축", place: "2학년 1반", count: 20 },
+            { id: "c25", name: "하랑", target: "1,2학년", cat: "human", group: "경영·경제", goal: "경영·경제 이론 심화 및 실제 사례 적용 탐구", place: "1학년 5반", count: 20 },
+            { id: "c26", name: "시나브로", target: "1,2학년", cat: "human", group: "인문사회", goal: "교내외 활동 기획 기사 작성 및 표현력 신장", place: "도서관 별실", count: 20 },
+            { id: "c27", name: "팬텀부", target: "1,2학년", cat: "art", group: "뮤지컬", goal: "뮤지컬 공연 준비를 통한 협동심 및 무대 경험", place: "1학년 6반", count: 18 },
+            { id: "c28", name: "에어하이", target: "1,2학년", cat: "ai", group: "항공", goal: "항공 기초 지식 실습 및 관련 진로 탐구", place: "2학년 6반", count: 18 },
+            { id: "c29", name: "인사이트", target: "1,2학년", cat: "human", group: "전계열", goal: "미디어·독서 기반 모의 창업 프로젝트 및 봉사", place: "2학년 11반", count: 16 },
+            { id: "c30", name: "라온누리", target: "1,2,3학년", cat: "art", group: "밴드", goal: "밴드 악기 연주 및 교내 공연 힐링 제공", place: "동아리실 1", count: 15 },
+            { id: "c31", name: "메아리", target: "1,2학년", cat: "art", group: "전계열(방송)", goal: "교내 방송 지원 및 미디어 콘텐츠 제작", place: "방송실", count: 15 },
+            { id: "c32", name: "유스티치아", target: "1,2학년", cat: "human", group: "정치·사회", goal: "정치·법적 사고 및 지역 사회 문제 탐구", place: "2학년 8반", count: 12 },
+            { id: "c33", name: "히스토리아", target: "1,2학년", cat: "human", group: "역사", goal: "역사적 사고력 증진 및 관련 이슈 분석", place: "2학년 4반", count: 13 },
+            { id: "c34", name: "소설로 세상 읽기", target: "1,2학년", cat: "art", group: "문학·인문", goal: "소설 독서를 통한 인간과 사회의 깊은 이해", place: "1학년 9반", count: 10 },
+            { id: "c35", name: "크리에이티브 온", target: "1,2학년", cat: "ai", group: "AI융합", goal: "디지털 도구 활용 창작 활동 및 세상을 향한 소통", place: "통합교육지원실2", count: 10 },
+            { id: "c36", name: "태권도", target: "1,2,3학년", cat: "art", group: "체육", goal: "태권도를 통한 심신 단련 및 스포츠맨십 함양", place: "태권도실", count: 8 },
+            { id: "c37", name: "에코온", target: "1,2학년", cat: "art", group: "봉사", goal: "노인복지관 연계 봉사 및 환경 봉사 실천", place: "온라인스튜디오", count: 7 },
+            { id: "c38", name: "클로젯", target: "1,2학년", cat: "art", group: "패션·예술", goal: "패션 디자인 창의성 및 진로 융합 심화 탐구", place: "진로활동실", count: 6 },
+            { id: "c39", name: "메디믹스", target: "3학년", cat: "grade3", group: "의료·보건", goal: "의료·보건 독서토론 및 심화 실험 진행", place: "3학년 3반", count: 19 },
+            { id: "c40", name: "엔지니어랩 1", target: "3학년", cat: "grade3", group: "공학", goal: "공학적 탐구 보고서 작성 및 프로젝트 발표", place: "3학년 1반", count: 28 },
+            { id: "c41", name: "엔지니어랩 2", target: "3학년", cat: "grade3", group: "공학", goal: "물리·화학공학 자율 주제 심화 실험 수행", place: "3학년 2반", count: 26 },
+            { id: "c42", name: "세모공 1", target: "3학년", cat: "grade3", group: "인문·교육", goal: "인문학적 소양 축적 및 자아 실현 연구", place: "자습실", count: 32 },
+            { id: "c43", name: "세모공 2", target: "3학년", cat: "grade3", group: "인문·교육", goal: "인문학적 탐구 및 교육 분야 심화 학습", place: "3학년 6반", count: 32 },
+            { id: "c44", name: "세모공 3", target: "3학년", cat: "grade3", group: "인문·교육", goal: "자아 성찰 및 인문사회 이슈 보고서 작성", place: "3학년 5반", count: 31 },
+            { id: "c45", name: "사유의 숲 1", target: "3학년", cat: "grade3", group: "인문·사회", goal: "사회적 이슈 깊이 있는 탐구 및 비판적 사고", place: "3학년 9반", count: 21 },
+            { id: "c46", name: "사유의 숲 2", target: "3학년", cat: "grade3", group: "인문·사회", goal: "인문사회 분야 토론 및 소논문 작성", place: "3학년 11반", count: 18 },
+            { id: "c47", name: "꿈틀", target: "3학년", cat: "grade3", group: "인문·사회", goal: "진로 독서 및 사회 현상 심층 비평", place: "3학년 10반", count: 24 },
+            { id: "c48", name: "진로독서", target: "3학년", cat: "grade3", group: "전계열", goal: "전공 적합성 도서 탐색 및 대입 수시 준비", place: "3학년 4반", count: 29 },
+            { id: "c49", name: "진로나침반", target: "3학년", cat: "grade3", group: "전계열", goal: "관심 학과 및 직업 분석 기반 개별 진로 계획", place: "3학년 7반", count: 26 },
+            { id: "c50", name: "진로 신문 만들기", target: "3학년", cat: "grade3", group: "전계열", goal: "진로 신문 제작 프로젝트를 통한 협업 능력 신장", place: "3학년 8반", count: 25 },
+            { id: "c51", name: "다독다독카페", target: "3학년", cat: "grade3", group: "전계열", goal: "다양한 매체 독서를 통한 생각 확장 및 소통", place: "한말사랑", count: 23 },
+            { id: "c52", name: "북유니버스", target: "3학년", cat: "grade3", group: "전계열", goal: "통찰력을 기르는 주제 중심 독서 탐구", place: "한말사랑", count: 25 },
+            { id: "c53", name: "미래직업탐구", target: "3학년", cat: "grade3", group: "진로(위탁)", goal: "직업교육 위탁과정 연계 및 실질 직무 역량", place: "진로활동실", count: 5 }
+        ];
+
+        // --- 3. 통합 검색 데이터베이스 (Search Index) ---
+        const searchIndex = [];
+
+        // 3-1. Q&A 등록 (41개)
+        qnaData.forEach(q => {
+            searchIndex.push({
+                id: `qna-${q.id}`,
+                type: q.category === '2028 대입' ? "2028 대입 특화" : "상담 Q&A",
+                title: `[Q${q.id}] ${q.q}`,
+                content: q.a,
+                tags: q.tags,
+                badgeColor: q.category === '2028 대입' ? "bg-rose-100 text-rose-700" : "bg-purple-100 text-purple-700",
+                targetTab: "qna",
+                targetElementId: `qna-card-${q.id}`
+            });
+        });
+
+        // 3-2. 브로셔 섹션 등록
+        searchIndex.push({
+            id: "brochure-ai",
+            type: "학교 브로셔",
+            title: "1. 경기도교육청 지정 AI 중점학교",
+            content: "인공지능 기초, 데이터 과학, AI 융합 수학, 소프트웨어와 생활, AI 로봇암, 피지컬 컴퓨팅, AI·SW 해커톤",
+            tags: ["AI중점", "해커톤", "피지컬컴퓨팅", "로봇암"],
+            badgeColor: "bg-blue-100 text-blue-700",
+            targetTab: "brochure",
+            targetElementId: "sec-ai"
+        });
+        searchIndex.push({
+            id: "brochure-phonefree",
+            type: "학교 브로셔",
+            title: "2. 폰프리(Phone-Free) 실천학교",
+            content: "일과 시간 스마트폰 보관, 수업 몰입도 향상, 런치콘서트, 오아시스 아침 운동",
+            tags: ["폰프리", "스마트폰", "휴대폰", "런치콘서트"],
+            badgeColor: "bg-emerald-100 text-emerald-700",
+            targetTab: "brochure",
+            targetElementId: "sec-phonefree"
+        });
+        searchIndex.push({
+            id: "brochure-dreamcamp",
+            type: "학교 브로셔",
+            title: "3. 사우 DREAM CAMP (1·2·3학년 단계별)",
+            content: "1학년 앱 개발 프로젝트, 2학년 모의창업, 3학년 꿈책향연 1:1 모의면접",
+            tags: ["드림캠프", "앱개발", "모의창업", "모의면접"],
+            badgeColor: "bg-purple-100 text-purple-700",
+            targetTab: "brochure",
+            targetElementId: "sec-dreamcamp"
+        });
+        searchIndex.push({
+            id: "brochure-global",
+            type: "학교 브로셔",
+            title: "4. 일본 소자미나미고 국제교류 & 드림하이 멘토링",
+            content: "일본 소자미나미고 MOU 온라인 ZOOM 교류, 현지 방문, 드림하이 대학생 멘토링 야자",
+            tags: ["국제교류", "일본", "소자미나미", "드림하이", "멘토링"],
+            badgeColor: "bg-amber-100 text-amber-700",
+            targetTab: "brochure",
+            targetElementId: "sec-global"
+        });
+
+        // 3-3. 53개 동아리 등록
+        clubData.forEach(c => {
+            searchIndex.push({
+                id: `club-${c.id}`,
+                type: "동아리 (53선)",
+                title: `[${c.target}] ${c.name} (${c.group})`,
+                content: `목표: ${c.goal} | 장소: ${c.place}`,
+                tags: ["동아리", c.name, c.group, c.target],
+                badgeColor: c.cat === 'grade3' ? 'bg-rose-100 text-rose-700' : 'bg-indigo-100 text-indigo-700',
+                targetTab: "club",
+                targetElementId: `club-card-${c.id}`
+            });
+        });
+
+        // --- 4. Render Functions ---
+
+        // Q&A 목록 렌더링
+        function renderQNA(filterCategory = 'all') {
+            const container = document.getElementById("qnaListContainer");
+            const filtered = filterCategory === 'all' ? qnaData : qnaData.filter(q => q.category === filterCategory);
+
+            container.innerHTML = filtered.map(item => `
+                <div id="qna-card-${item.id}" class="bg-white border border-slate-200/80 rounded-xl overflow-hidden shadow-xs transition">
+                    <button onclick="toggleQNA(${item.id})" class="w-full text-left p-3 flex justify-between items-center text-xs font-bold text-slate-800 hover:bg-slate-50">
+                        <span class="flex items-start gap-2">
+                            <span class="${item.category === '2028 대입' ? 'text-rose-600' : 'text-indigo-600'} font-black shrink-0">Q${item.id}.</span>
+                            <span class="leading-snug">${item.q}</span>
+                        </span>
+                        <i id="qna-icon-${item.id}" class="fa-solid fa-chevron-down text-slate-400 text-[10px] transition-transform ml-2 shrink-0 mt-0.5"></i>
+                    </button>
+                    <div id="qna-ans-${item.id}" class="hidden p-3 pt-0 bg-slate-50 text-[11px] text-slate-600 border-t border-slate-100 leading-relaxed">
+                        <div class="pt-2 text-slate-700 font-normal leading-relaxed whitespace-pre-line">${item.a}</div>
+                        <div class="mt-2.5 flex gap-1 flex-wrap">
+                            ${item.tags.map(t => `<span class="bg-indigo-50 text-indigo-600 text-[9px] px-1.5 py-0.5 rounded border border-indigo-100">#${t}</span>`).join('')}
+                        </div>
+                    </div>
+                </div>
+            `).join('');
+        }
+
+        function filterQNA(cat) {
+            document.querySelectorAll(".qna-filter-btn").forEach(btn => {
+                btn.classList.remove("bg-indigo-600", "text-white");
+                btn.classList.add("bg-slate-200", "text-slate-700");
+            });
+            event.target.classList.remove("bg-slate-200", "text-slate-700");
+            event.target.classList.add("bg-indigo-600", "text-white");
+            renderQNA(cat);
+        }
+
+        function toggleQNA(id) {
+            const ans = document.getElementById(`qna-ans-${id}`);
+            const icon = document.getElementById(`qna-icon-${id}`);
+            if (ans.classList.contains("hidden")) {
+                ans.classList.remove("hidden");
+                icon.classList.add("rotate-180");
+            } else {
+                ans.classList.add("hidden");
+                icon.classList.remove("rotate-180");
+            }
+        }
+
+        function openQnA(id) {
+            renderQNA('all'); // 전제 필터 복원 후 해당 항목 오픈
+            setTimeout(() => {
+                const ans = document.getElementById(`qna-ans-${id}`);
+                const icon = document.getElementById(`qna-icon-${id}`);
+                if (ans && ans.classList.contains("hidden")) {
+                    ans.classList.remove("hidden");
+                    if (icon) icon.classList.add("rotate-180");
+                }
+            }, 50);
+        }
+
+        // 동아리 목록 렌더링
+        function renderClubs(filter = 'all') {
+            const container = document.getElementById("clubListContainer");
+            const filtered = filter === 'all' ? clubData : clubData.filter(c => c.cat === filter);
+            
+            container.innerHTML = filtered.map(c => `
+                <div id="club-card-${c.id}" class="bg-white p-3 rounded-xl border border-slate-200/80 shadow-xs space-y-1.5">
+                    <div class="flex justify-between items-center">
+                        <div class="flex items-center gap-1.5">
+                            <span class="text-[9px] font-bold px-1.5 py-0.5 rounded ${
+                                c.cat === 'grade3' ? 'bg-rose-100 text-rose-700' :
+                                c.cat === 'ai' ? 'bg-blue-100 text-blue-700' :
+                                c.cat === 'human' ? 'bg-purple-100 text-purple-700' : 'bg-amber-100 text-amber-700'
+                            }">${c.group}</span>
+                            <span class="text-[10px] text-slate-400">(${c.target})</span>
+                        </div>
+                        <span class="text-[10px] text-slate-500 font-medium"><i class="fa-solid fa-users text-[9px] text-slate-400"></i> ${c.count}명</span>
+                    </div>
+                    <h4 class="font-bold text-slate-900 text-xs">${c.name}</h4>
+                    <p class="text-[11px] text-slate-600 leading-snug">${c.goal}</p>
+                    <div class="text-[10px] text-slate-400 pt-0.5 flex justify-between border-t border-slate-100 mt-1">
+                        <span>장소: ${c.place}</span>
+                    </div>
+                </div>
+            `).join('');
+        }
+
+        function filterClubs(cat) {
+            document.querySelectorAll(".club-filter-btn").forEach(btn => {
+                btn.classList.remove("bg-indigo-600", "text-white");
+                btn.classList.add("bg-slate-200", "text-slate-700");
+            });
+            event.target.classList.remove("bg-slate-200", "text-slate-700");
+            event.target.classList.add("bg-indigo-600", "text-white");
+            renderClubs(cat);
+        }
+
+        // --- 5. 탭 전환 및 스크롤 이동 ---
+        function switchTab(tabId, scrollToId = null) {
+            document.getElementById("searchResultsView").classList.add("hidden");
+            document.querySelectorAll(".tab-content").forEach(el => el.classList.add("hidden"));
+            
+            const targetTab = document.getElementById(`tab-${tabId}`);
+            if (targetTab) {
+                targetTab.classList.remove("hidden");
+            }
+
+            document.querySelectorAll(".nav-btn").forEach(btn => {
+                btn.classList.remove("text-indigo-600");
+                btn.classList.add("text-slate-500");
+            });
+            const activeNav = document.getElementById(`nav-${tabId}`);
+            if (activeNav) {
+                activeNav.classList.remove("text-slate-500");
+                activeNav.classList.add("text-indigo-600");
+            }
+
+            if (scrollToId) {
+                setTimeout(() => {
+                    const el = document.getElementById(scrollToId);
+                    if (el) {
+                        el.scrollIntoView({ behavior: 'smooth', block: 'center' });
+                        el.classList.add('ring-2', 'ring-indigo-500');
+                        setTimeout(() => el.classList.remove('ring-2', 'ring-indigo-500'), 2000);
+                    }
+                }, 100);
+            } else {
+                document.getElementById("mainContainer").scrollTop = 0;
+            }
+        }
+
+        function jumpToOriginal(tabId, elementId, actionType = null) {
+            clearSearchInputOnly();
+            switchTab(tabId, elementId);
+            if (actionType === 'qna' || elementId.startsWith('qna-card-')) {
+                const qnaId = elementId.replace('qna-card-', '');
+                openQnA(qnaId);
+            }
+        }
+
+        function clearSearchInputOnly() {
+            document.getElementById("searchInput").value = "";
+            document.getElementById("searchClearBtn").classList.add("hidden");
+            document.getElementById("searchResultsView").classList.add("hidden");
+        }
+
+        // --- 6. 검색 엔진 (띄어쓰기 둔감화 처리) ---
+        function handleSearch(query) {
+            const rawQuery = query.trim().toLowerCase();
+            const normalizedQuery = rawQuery.replace(/\s+/g, ''); // 띄어쓰기 제거한 키워드
+
+            const resultsView = document.getElementById("searchResultsView");
+            const resultsList = document.getElementById("searchResultsList");
+            const clearBtn = document.getElementById("searchClearBtn");
+
+            if (rawQuery === "") {
+                clearSearch();
+                return;
+            }
+
+            clearBtn.classList.remove("hidden");
+            document.querySelectorAll(".tab-content").forEach(el => el.classList.add("hidden"));
+            resultsView.classList.remove("hidden");
+
+            const matched = searchIndex.filter(item => {
+                const titleMatch = item.title.toLowerCase().includes(rawQuery) || item.title.toLowerCase().replace(/\s+/g, '').includes(normalizedQuery);
+                const contentMatch = item.content.toLowerCase().includes(rawQuery) || item.content.toLowerCase().replace(/\s+/g, '').includes(normalizedQuery);
+                const tagMatch = item.tags.some(t => t.toLowerCase().includes(rawQuery) || t.toLowerCase().replace(/\s+/g, '').includes(normalizedQuery));
+                return titleMatch || contentMatch || tagMatch;
+            });
+
+            document.getElementById("searchCount").innerText = matched.length;
+
+            if (matched.length === 0) {
+                resultsList.innerHTML = `
+                    <div class="text-center py-8 text-slate-400 space-y-2">
+                        <i class="fa-solid fa-magnifying-glass-minus text-3xl"></i>
+                        <p class="text-xs">'${query}'에 대한 검색 결과가 없습니다.<br>추천 태그를 클릭해 보세요.</p>
+                    </div>
+                `;
+                return;
+            }
+
+            resultsList.innerHTML = matched.map(item => `
+                <div class="bg-white p-3 rounded-xl border border-slate-200/80 shadow-xs space-y-1.5 hover:border-indigo-400 transition">
+                    <div class="flex justify-between items-center">
+                        <span class="text-[9px] font-bold px-1.5 py-0.5 rounded ${item.badgeColor}">${item.type}</span>
+                        <button onclick="jumpToOriginal('${item.targetTab}', '${item.targetElementId}', 'qna')" 
+                                class="text-[11px] font-extrabold text-indigo-600 hover:text-indigo-800 bg-indigo-50 px-2 py-0.5 rounded border border-indigo-100 flex items-center gap-1">
+                            원문 보기 <i class="fa-solid fa-chevron-right text-[8px]"></i>
+                        </button>
+                    </div>
+                    <h4 class="font-bold text-xs text-slate-900">${highlightKeyword(item.title, rawQuery)}</h4>
+                    <p class="text-[11px] text-slate-600 leading-relaxed">${highlightKeyword(item.content.substring(0, 120) + "...", rawQuery)}</p>
+                </div>
+            `).join('');
+        }
+
+        function highlightKeyword(text, kw) {
+            if (!kw) return text;
+            const reg = new RegExp(`(${kw})`, 'gi');
+            return text.replace(reg, `<mark>$1</mark>`);
+        }
+
+        function quickSearch(tag) {
+            const input = document.getElementById("searchInput");
+            input.value = tag;
+            handleSearch(tag);
+        }
+
+        function clearSearch() {
+            clearSearchInputOnly();
+            switchTab("home");
+        }
+
+        function resetApp() {
+            clearSearch();
+            renderQNA('all');
+            renderClubs('all');
+        }
+
+        // 앱 초기화
+        window.onload = function() {
+            updateClock(); // 로딩 즉시 시계 업데이트
+            renderQNA();
+            renderClubs();
+        }
+    </script>
+</body>
+</html>
